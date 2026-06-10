@@ -37,6 +37,78 @@ describe("AccountService → BalanceService Contract", () => {
     });
   });
 
+  describe("GET /balance/:userId — not found", () => {
+    it("throws an error when user does not exist", async () => {
+      const provider = new PactV3({
+        consumer: "AccountService",
+        provider: "BalanceService",
+        dir: path.resolve(__dirname, "./pacts"),
+        port: 8082,
+      });
+      await provider
+        .given("user with ID 999 does not exist")
+        .uponReceiving("a request for balance of a non-existent user")
+        .withRequest({ method: "GET", path: "/balance/999", headers: { Accept: "application/json" } })
+        .willRespondWith({
+          status: 404,
+          headers: { "Content-Type": "application/json" },
+          body: { error: like("User not found") },
+        })
+        .executeTest(async (mockServer) => {
+          const client = new BalanceApiClient(mockServer.url);
+          await expect(client.getBalance(999)).rejects.toThrow("Failed to fetch balance: 404");
+        });
+    });
+  });
+
+  describe("GET /balance/:userId — forbidden", () => {
+    it("throws an error when access to balance is unauthorized", async () => {
+      const provider = new PactV3({
+        consumer: "AccountService",
+        provider: "BalanceService",
+        dir: path.resolve(__dirname, "./pacts"),
+        port: 8083,
+      });
+      await provider
+        .given("user with ID 456 is not authorized")
+        .uponReceiving("a request for balance of another user")
+        .withRequest({ method: "GET", path: "/balance/456", headers: { Accept: "application/json" } })
+        .willRespondWith({
+          status: 403,
+          headers: { "Content-Type": "application/json" },
+          body: { error: like("Forbidden") },
+        })
+        .executeTest(async (mockServer) => {
+          const client = new BalanceApiClient(mockServer.url);
+          await expect(client.getBalance(456)).rejects.toThrow("Failed to fetch balance: 403");
+        });
+    });
+  });
+
+  describe("GET /transactions/:userId — not found", () => {
+    it("throws an error when user has no transactions", async () => {
+      const provider = new PactV3({
+        consumer: "AccountService",
+        provider: "BalanceService",
+        dir: path.resolve(__dirname, "./pacts"),
+        port: 8084,
+      });
+      await provider
+        .given("user with ID 999 has no transactions")
+        .uponReceiving("a request for transactions of a non-existent user")
+        .withRequest({ method: "GET", path: "/transactions/999", headers: { Accept: "application/json" } })
+        .willRespondWith({
+          status: 404,
+          headers: { "Content-Type": "application/json" },
+          body: { error: like("User not found") },
+        })
+        .executeTest(async (mockServer) => {
+          const client = new BalanceApiClient(mockServer.url);
+          await expect(client.getTransactions(999)).rejects.toThrow("Failed to fetch transactions: 404");
+        });
+    });
+  });
+
   describe("GET /transactions/:userId", () => {
     it("returns list of transactions for existing user", async () => {
       const provider = new PactV3({

@@ -152,6 +152,117 @@
         },
         "status": 200
       }
+    },
+    {
+      "description": "a request for balance of another user",
+      "providerStates": [
+        {
+          "name": "user with ID 456 is not authorized"
+        }
+      ],
+      "request": {
+        "headers": {
+          "Accept": "application/json"
+        },
+        "method": "GET",
+        "path": "/balance/456"
+      },
+      "response": {
+        "body": {
+          "error": "Forbidden"
+        },
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "matchingRules": {
+          "body": {
+            "$.error": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            }
+          },
+          "header": {}
+        },
+        "status": 403
+      }
+    },
+    {
+      "description": "a request for balance of a non-existent user",
+      "providerStates": [
+        {
+          "name": "user with ID 999 does not exist"
+        }
+      ],
+      "request": {
+        "headers": {
+          "Accept": "application/json"
+        },
+        "method": "GET",
+        "path": "/balance/999"
+      },
+      "response": {
+        "body": {
+          "error": "User not found"
+        },
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "matchingRules": {
+          "body": {
+            "$.error": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            }
+          },
+          "header": {}
+        },
+        "status": 404
+      }
+    },
+    {
+      "description": "a request for transactions of a non-existent user",
+      "providerStates": [
+        {
+          "name": "user with ID 999 has no transactions"
+        }
+      ],
+      "request": {
+        "headers": {
+          "Accept": "application/json"
+        },
+        "method": "GET",
+        "path": "/transactions/999"
+      },
+      "response": {
+        "body": {
+          "error": "User not found"
+        },
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "matchingRules": {
+          "body": {
+            "$.error": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            }
+          },
+          "header": {}
+        },
+        "status": 404
+      }
     }
   ],
   "metadata": {
