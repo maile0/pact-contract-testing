@@ -15,10 +15,23 @@ In a microservices architecture, Service A calls Service B. Without contract tes
 
 ## Tests
 
-| Interaction | Endpoint | Expected |
+### `GET /balance/:userId`
+
+| Scenario | User ID | Expected |
 |---|---|---|
-| Get user balance | `GET /balance/123` | 200 + balance object |
-| Get user transactions | `GET /transactions/123` | 200 + array of transactions |
+| Existing user | 123 | 200 + balance object (`userId`, `amount`, `currency`, `accountType`) |
+| User not found | 999 | 404 + error body, client throws `"Failed to fetch balance: 404"` |
+| Unauthorized access | 456 | 403 + error body, client throws `"Failed to fetch balance: 403"` |
+| Service unavailable | 123 | 500 + error body, client throws `"Failed to fetch balance: 500"` |
+
+### `GET /transactions/:userId`
+
+| Scenario | User ID | Expected |
+|---|---|---|
+| Existing user with transactions | 123 | 200 + array of transaction objects |
+| User not found | 999 | 404 + error body, client throws `"Failed to fetch transactions: 404"` |
+| Unauthorized access | 456 | 403 + error body, client throws `"Failed to fetch transactions: 403"` |
+| Service unavailable | 123 | 500 + error body, client throws `"Failed to fetch transactions: 500"` |
 
 ## Run
 
