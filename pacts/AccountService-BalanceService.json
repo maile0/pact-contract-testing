@@ -4,6 +4,80 @@
   },
   "interactions": [
     {
+      "description": "a request for balance when the service is down",
+      "providerStates": [
+        {
+          "name": "the balance service is experiencing an internal error"
+        }
+      ],
+      "request": {
+        "headers": {
+          "Accept": "application/json"
+        },
+        "method": "GET",
+        "path": "/balance/123"
+      },
+      "response": {
+        "body": {
+          "error": "Internal Server Error"
+        },
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "matchingRules": {
+          "body": {
+            "$.error": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            }
+          },
+          "header": {}
+        },
+        "status": 500
+      }
+    },
+    {
+      "description": "a request for transactions when the service is down",
+      "providerStates": [
+        {
+          "name": "the balance service is experiencing an internal error"
+        }
+      ],
+      "request": {
+        "headers": {
+          "Accept": "application/json"
+        },
+        "method": "GET",
+        "path": "/transactions/123"
+      },
+      "response": {
+        "body": {
+          "error": "Internal Server Error"
+        },
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "matchingRules": {
+          "body": {
+            "$.error": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            }
+          },
+          "header": {}
+        },
+        "status": 500
+      }
+    },
+    {
       "description": "a request for user balance",
       "providerStates": [
         {
@@ -166,6 +240,43 @@
         },
         "method": "GET",
         "path": "/balance/456"
+      },
+      "response": {
+        "body": {
+          "error": "Forbidden"
+        },
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "matchingRules": {
+          "body": {
+            "$.error": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            }
+          },
+          "header": {}
+        },
+        "status": 403
+      }
+    },
+    {
+      "description": "a request for transactions of another user",
+      "providerStates": [
+        {
+          "name": "user with ID 456 is not authorized"
+        }
+      ],
+      "request": {
+        "headers": {
+          "Accept": "application/json"
+        },
+        "method": "GET",
+        "path": "/transactions/456"
       },
       "response": {
         "body": {

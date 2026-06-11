@@ -109,6 +109,78 @@ describe("AccountService → BalanceService Contract", () => {
     });
   });
 
+  describe("GET /balance/:userId — server error", () => {
+    it("throws an error when the balance service is unavailable", async () => {
+      const provider = new PactV3({
+        consumer: "AccountService",
+        provider: "BalanceService",
+        dir: path.resolve(__dirname, "./pacts"),
+        port: 8086,
+      });
+      await provider
+        .given("the balance service is experiencing an internal error")
+        .uponReceiving("a request for balance when the service is down")
+        .withRequest({ method: "GET", path: "/balance/123", headers: { Accept: "application/json" } })
+        .willRespondWith({
+          status: 500,
+          headers: { "Content-Type": "application/json" },
+          body: { error: like("Internal Server Error") },
+        })
+        .executeTest(async (mockServer) => {
+          const client = new BalanceApiClient(mockServer.url);
+          await expect(client.getBalance(123)).rejects.toThrow("Failed to fetch balance: 500");
+        });
+    });
+  });
+
+  describe("GET /transactions/:userId — forbidden", () => {
+    it("throws an error when access to transactions is unauthorized", async () => {
+      const provider = new PactV3({
+        consumer: "AccountService",
+        provider: "BalanceService",
+        dir: path.resolve(__dirname, "./pacts"),
+        port: 8085,
+      });
+      await provider
+        .given("user with ID 456 is not authorized")
+        .uponReceiving("a request for transactions of another user")
+        .withRequest({ method: "GET", path: "/transactions/456", headers: { Accept: "application/json" } })
+        .willRespondWith({
+          status: 403,
+          headers: { "Content-Type": "application/json" },
+          body: { error: like("Forbidden") },
+        })
+        .executeTest(async (mockServer) => {
+          const client = new BalanceApiClient(mockServer.url);
+          await expect(client.getTransactions(456)).rejects.toThrow("Failed to fetch transactions: 403");
+        });
+    });
+  });
+
+  describe("GET /transactions/:userId — server error", () => {
+    it("throws an error when the transactions service is unavailable", async () => {
+      const provider = new PactV3({
+        consumer: "AccountService",
+        provider: "BalanceService",
+        dir: path.resolve(__dirname, "./pacts"),
+        port: 8087,
+      });
+      await provider
+        .given("the balance service is experiencing an internal error")
+        .uponReceiving("a request for transactions when the service is down")
+        .withRequest({ method: "GET", path: "/transactions/123", headers: { Accept: "application/json" } })
+        .willRespondWith({
+          status: 500,
+          headers: { "Content-Type": "application/json" },
+          body: { error: like("Internal Server Error") },
+        })
+        .executeTest(async (mockServer) => {
+          const client = new BalanceApiClient(mockServer.url);
+          await expect(client.getTransactions(123)).rejects.toThrow("Failed to fetch transactions: 500");
+        });
+    });
+  });
+
   describe("GET /transactions/:userId", () => {
     it("returns list of transactions for existing user", async () => {
       const provider = new PactV3({
